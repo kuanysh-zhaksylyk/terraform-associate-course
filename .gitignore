@@ -32,3 +32,5 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+*/intro/.terraform/providers/registry.terraform.io/hashicorp/*
+intro/.terraform.lock.hcl
