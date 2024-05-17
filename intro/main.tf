@@ -116,29 +116,76 @@ resource "aws_nat_gateway" "nat_gateway" {
   }
 }
 
-# Terraform Data Block - To Lookup Latest Ubuntu 20.04 AMI Image
-data "aws_ami" "ubuntu" {
-  most_recent = true
+# # Terraform Data Block - To Lookup Latest Ubuntu 20.04 AMI Image
+# data "aws_ami" "ubuntu" {
+#   most_recent = true
 
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+#   filter {
+#     name   = "name"
+#     values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+#   }
+
+#   filter {
+#     name   = "virtualization-type"
+#     values = ["hvm"]
+#   }
+
+#   owners = ["099720109477"]
+# }
+
+# # Terraform Resource Block - To Build EC2 instance in Public Subnet
+# resource "aws_instance" "web_server" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
+#   tags = {
+#     Name = "Ubuntu EC2 Server"
+#   }
+# }
+
+# resource "aws_instance" "web" {
+#   ami                    = "ami-04ff98ccbfa41c9ad"
+#   instance_type          = "t2.micro"
+#   subnet_id              = "subnet-01b9c111a27f76649"
+#   vpc_security_group_ids = ["sg-0bfa96e4776602435"]
+
+#   tags = {
+#     "Terraform" = "true"
+#   }
+# }
+
+resource "aws_s3_bucket" "my-new-s3-bucket" {
+  bucket = "aws-test-bucket-${random_id.randomness.hex}"
+
+  tags = {
+    Name    = "My s3 Bucket"
+    Purpose = "Intro to Resource Block Lab"
   }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"]
 }
 
-# Terraform Resource Block - To Build EC2 instance in Public Subnet
-resource "aws_instance" "web_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
-  tags = {
-    Name = "Ubuntu EC2 Server"
+resource "aws_s3_bucket_acl" "my-new-bucket-acl" {
+  bucket = aws_s3_bucket.my-new-s3-bucket.id
+  acl    = "private"
+}
+resource "aws_security_group" "my-new-security-group" {
+  name        = "web_server_inbound"
+  description = "Allow inbound traffic on tcp/443"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    description = "Allow 443 from the Internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name    = "web_server_inbound"
+    Purpose = "Intro to Resource Block"
+  }
+}
+
+resource "random_id" "randomness" {
+  byte_length = 16
 }
