@@ -34,3 +34,4 @@ override.tf.json
 terraform.rc
 */intro/.terraform/providers/registry.terraform.io/hashicorp/*
 intro/.terraform.lock.hcl
+MyAWSKey.pem
